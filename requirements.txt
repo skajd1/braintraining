@@ -1,0 +1,7 @@
+streamlit
+langchain
+langchain-google-genai
+chromadb
+sentence-transformers
+unstructured[md]
+python-dotenv

@@ -1,0 +1,21 @@
+# Python specific
+__pycache__/
+*.pyc
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+
+# Local Data, Models, and Databases
+/source_documents/
+/processed_markdown/
+/chroma_db/
+/images/
+/ko-sroberta-multitask/
+
+# IDE specific
+.vscode/
