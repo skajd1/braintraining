@@ -28,10 +28,15 @@ vector_manager = st.session_state.vector_manager
 with st.sidebar:
     st.header("지식 베이스 관리")
     
+    # 파일 업로더에 고유한 키를 부여
+    if 'file_uploader_key' not in st.session_state:
+        st.session_state.file_uploader_key = 0
+
     uploaded_files = st.file_uploader(
         "문서 파일을 선택하세요 (PDF, DOCX, XLSX)",
         type=["pdf", "docx", "xlsx"],
-        accept_multiple_files=True
+        accept_multiple_files=True,
+        key=f"file_uploader_{st.session_state.file_uploader_key}" # 키 사용
     )
 
     if uploaded_files:
@@ -70,6 +75,8 @@ with st.sidebar:
                             st.warning(f"⚠️ '{file.name}'에서 내용을 추출하지 못했습니다.")
             
             st.success("지식 베이스 업데이트 완료!")
+            # 파일 업로더 UI 초기화를 위해 키 값 변경
+            st.session_state.file_uploader_key += 1
             # 벡터 매니저를 새로고침하여 변경사항을 반영
             st.session_state.vector_manager = VectorStoreManager()
             st.rerun()

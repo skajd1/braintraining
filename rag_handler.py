@@ -29,6 +29,7 @@ def create_rag_chain(retriever, llm):
     prompt_template = """
     당신은 제공된 컨텍스트 정보를 바탕으로 질문에 답변하는 AI 어시스턴트입니다.
     답변은 반드시 한국어로 작성해주세요.
+    답변 후 출처를 명시해야 합니다.
     
     # 컨텍스트:
     {context}
