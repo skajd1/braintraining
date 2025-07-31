@@ -3,5 +3,6 @@ langchain
 langchain-google-genai
 chromadb
 sentence-transformers
-unstructured[md]
+unstructured[docx,xlsx]
 python-dotenv
+python-magic-bin

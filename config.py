@@ -14,10 +14,8 @@ REMOTE_EMBEDDING_MODEL = "jhgan/ko-sroberta-multitask"
 LLM_MODEL_NAME = "gemini-2.5-pro"
 
 # --- 파일 시스템 경로 설정 ---
-# PDF 원본 파일이 저장될 디렉토리
+# 원본 파일이 저장될 디렉토리 (PDF, DOCX, XLSX 등)
 SOURCE_DOCS_DIR = "source_documents"
-# PDF에서 변환된 마크다운 파일이 저장될 디렉토리
-MARKDOWN_OUTPUT_DIR = "processed_markdown"
 # 추출된 이미지가 저장될 디렉토리 (현재 사용 안 함, 확장성 위해 유지)
 IMAGE_OUTPUT_DIR = "images"
 # ChromaDB 벡터 데이터베이스가 저장될 디렉토리

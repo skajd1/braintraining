@@ -29,8 +29,8 @@ with st.sidebar:
     st.header("지식 베이스 관리")
     
     uploaded_files = st.file_uploader(
-        "PDF 파일을 선택하세요",
-        type="pdf",
+        "문서 파일을 선택하세요 (PDF, DOCX, XLSX)",
+        type=["pdf", "docx", "xlsx"],
         accept_multiple_files=True
     )
 
@@ -40,7 +40,7 @@ with st.sidebar:
 
         st.markdown("--- ")
         for file in uploaded_files:
-            if file_handler.pdf_exists(file.name):
+            if file_handler.source_document_exists(file.name):
                 st.session_state.overwrite_choices[file.name] = st.checkbox(f"'{file.name}' 덮어쓰기", key=f"cb_{file.name}")
             else:
                 st.write(f"- '{file.name}' (새 파일)")
@@ -49,21 +49,25 @@ with st.sidebar:
         if st.button("지식 베이스 업데이트"):
             with st.spinner("선택된 파일로 지식 베이스를 업데이트합니다..."):
                 for file in uploaded_files:
-                    is_new_file = not file_handler.pdf_exists(file.name)
+                    is_new_file = not file_handler.source_document_exists(file.name)
                     should_overwrite = st.session_state.overwrite_choices.get(file.name, False)
 
                     if is_new_file or should_overwrite:
-                        pdf_path = file_handler.save_uploaded_pdf(file)
-                        md_filename = os.path.basename(file_handler.get_md_path(file.name))
+                        source_file_path = file_handler.save_uploaded_file(file)
                         
+                        # 파일 이름만 사용하여 문서 삭제 (확장자 포함)
                         if should_overwrite:
-                            vector_manager.delete_documents(md_filename)
+                            vector_manager.delete_documents(file.name)
                         
-                        md_path = document_processor.extract_text_from_pdf(pdf_path)
-                        if md_path:
-                            docs = document_processor.load_and_split_document(md_path)
+                        docs = document_processor.load_and_split_document(source_file_path)
+                        if docs:
+                            # 각 Document 객체의 metadata에 'source' 필드 업데이트
+                            for doc in docs:
+                                doc.metadata['source'] = file.name # 원본 파일 이름으로 설정
                             vector_manager.add_documents(docs)
                             st.write(f"✅ '{file.name}' 처리 완료")
+                        else:
+                            st.warning(f"⚠️ '{file.name}'에서 내용을 추출하지 못했습니다.")
             
             st.success("지식 베이스 업데이트 완료!")
             # 벡터 매니저를 새로고침하여 변경사항을 반영
@@ -95,4 +99,4 @@ if retriever:
         
         st.session_state.messages.append({"role": "assistant", "content": response})
 else:
-    st.info("왼쪽 사이드바에서 PDF를 업로드하고 '지식 베이스 업데이트' 버튼을 눌러주세요.")
+    st.info("왼쪽 사이드바에서 문서 파일을 업로드하고 '지식 베이스 업데이트' 버튼을 눌러주세요.")
