@@ -4,35 +4,38 @@
 
 ## 주요 기능
 
-- **PDF 문서 처리:** `source_documents` 폴더에 있는 PDF 파일을 Markdown 형식으로 변환합니다.
-- **벡터 데이터베이스 생성:** 변환된 텍스트를 의미 기반의 벡터로 임베딩하고 ChromaDB에 저장하여 빠른 검색을 가능하게 합니다.
-- **챗봇 인터페이스:** 사용자가 자연어로 질문을 입력하고 문서 기반의 답변을 받을 수 있는 대화형 웹 UI를 제공합니다.
-- **답변 생성:** 사용자의 질문과 가장 관련성이 높은 문서 조각을 검색하고, 이를 바탕으로 LLM(Large Language Model)이 답변을 생성합니다.
+- **동적 PDF 처리:** 사용자가 웹 UI에서 직접 PDF 파일을 업로드하면, 실시간으로 텍스트를 추출하고 처리합니다.
+- **자동 지식 베이스 구축:** 업로드된 PDF 내용은 자동으로 텍스트로 변환되고, 의미 기반의 벡터로 임베딩되어 ChromaDB에 저장됩니다.
+- **대화형 챗봇 인터페이스:** 사용자가 자연어로 질문을 입력하고 문서 기반의 답변을 받을 수 있는 직관적인 채팅 UI를 제공합니다.
+- **RAG 기반 답변 생성:** 사용자의 질문과 가장 관련성이 높은 문서 조각을 벡터 저장소에서 검색하고, 이를 근거로 Gemini LLM이 정확하고 신뢰도 높은 답변을 생성합니다.
+- **지식 베이스 관리:** 이미 추가된 PDF를 다시 업로드할 경우, 기존 내용을 삭제하고 새로 업데이트하는 덮어쓰기 기능을 지원합니다.
 
-## 시스템 구성도
+## 시스템 워크플로우
 
 ```
-1. PDF 파일 입력
-   (source_documents)
+1. 사용자가 Streamlit 웹 앱 실행
+   (streamlit run app.py)
        |
        V
-2. PDF -> Markdown 변환
-   (pdf_to_md.py)
+2. 웹 UI에서 PDF 파일 업로드
        |
        V
-3. 텍스트 분할 및 벡터화
-   (setup_chroma.py)
+3. PDF 텍스트 추출 및 분할 (document_processor.py)
        |
        V
-4. ChromaDB 벡터 저장소
-   (chroma_db)
+4. 텍스트 벡터화 및 ChromaDB 저장 (vector_store_manager.py)
        |
        V
-5. Streamlit 챗봇 앱
-   (app.py)
-   - 사용자 질문 입력
-   - DB에서 관련 문서 검색
-   - LLM으로 답변 생성
+5. 사용자 질문 입력
+       |
+       V
+6. 관련 문서 검색 (Retriever)
+       |
+       V
+7. LLM(Gemini)을 통해 답변 생성 (rag_handler.py)
+       |
+       V
+8. 웹 UI에 답변 출력
 ```
 
 ## 설치 방법
@@ -48,37 +51,53 @@
     ```bash
     pip install -r requirements.txt
     ```
+3.  **환경 변수 설정:**
+    `.env` 파일을 생성하고, 아래와 같이 Gemini API 키를 입력합니다.
+    ```
+    GEMINI_API_KEY="YOUR_API_KEY"
+    ```
 
 ## 사용 방법
 
-1.  **PDF 파일 준비:**
-    질의응답의 기반으로 삼고 싶은 PDF 파일들을 `source_documents` 폴더에 넣어주세요.
-
-2.  **PDF를 Markdown으로 변환:**
-    다음 스크립트를 실행하여 PDF 파일을 텍스트로 변환합니다. 변환된 파일은 `processed_markdown` 폴더에 저장됩니다.
-    ```bash
-    python pdf_to_md.py
-    ```
-
-3.  **벡터 데이터베이스 설정:**
-    변환된 텍스트를 벡터화하여 ChromaDB에 저장합니다.
-    ```bash
-    python setup_chroma.py
-    ```
-
-4.  **챗봇 애플리케이션 실행:**
-    Streamlit 앱을 실행하여 챗봇을 시작합니다.
+1.  **챗봇 애플리케이션 실행:**
+    다음 명령어를 터미널에 입력하여 Streamlit 앱을 실행합니다.
     ```bash
     streamlit run app.py
     ```
-    웹 브라우저에서 앱이 열리면 질문을 입력하여 답변을 받을 수 있습니다.
+
+2.  **지식 베이스 구축:**
+    - 웹 브라우저에 앱이 열리면, 왼쪽 사이드바의 파일 업로더를 사용하여 하나 이상의 PDF 파일을 업로드합니다.
+    - 파일 선택 후 '지식 베이스 업데이트' 버튼을 클릭합니다.
+    - 앱이 자동으로 파일을 처리하고 벡터 데이터베이스에 저장합니다.
+
+3.  **질의응답:**
+    - 지식 베이스 구축이 완료되면 메인 화면에 채팅 입력창이 나타납니다.
+    - 업로드한 PDF 문서의 내용에 대해 자유롭게 질문하고 답변을 받을 수 있습니다.
+
+## 프로젝트 구조
+
+```
+.
+├── app.py                  # Streamlit 메인 애플리케이션
+├── config.py               # API 키, 경로, 모델 설정
+├── document_processor.py   # PDF 텍스트 추출 및 문서 분할
+├── file_handler.py         # 파일 저장 및 경로 관리
+├── rag_handler.py          # RAG 체인 및 LLM 핸들러
+├── vector_store_manager.py # ChromaDB 벡터 저장소 관리
+├── requirements.txt        # Python 라이브러리 의존성
+├── source_documents/       # 업로드된 원본 PDF 저장
+├── processed_markdown/     # 추출된 텍스트(마크다운) 저장
+└── chroma_db/              # ChromaDB 벡터 데이터 저장
+```
 
 ## 주요 의존성
 
 -   `streamlit`
 -   `langchain`
+-   `langchain-google-genai`
 -   `chromadb`
 -   `sentence-transformers` (`ko-sroberta-multitask`)
--   `PyMuPDF`
+-   `unstructured[md]`
+-   `python-dotenv`
 
 자세한 내용은 `requirements.txt` 파일을 참고하세요.
